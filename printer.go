@@ -14,7 +14,7 @@ func printWelcome() {
 func printSummary(lastKnownWinner string, maxTickets uint)  {
 	fmt.Println("We have sold out all tickets for conference. Here is the list of participants")
 	for _, booking := range bookings {
-		fmt.Println(booking["firstName"] + " " + booking["lastName"])
+		fmt.Println(booking.firstName + " " + booking.lastName)
 	}
 
 	fmt.Printf("Most number of tickets is acquired by %v and count is %v\n", lastKnownWinner, maxTickets)
