@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"strconv"
 )
 
 var conferenceName = "Go Conference"
@@ -10,9 +10,11 @@ var conferenceName = "Go Conference"
 const conferenceTickets int = 50
 
 var remainingTickets uint = 50
-var bookings = []string{}
+var bookings []map[string]string
 var maxTickets uint
 var lastKnownWinner = ""
+
+
 
 func main() {
 
@@ -24,8 +26,8 @@ func main() {
 		isValidName, isValidEmail, isValidUserTickets := validateInput(firstName, lastName, email, userTickets, remainingTickets)
 
 		if isValidEmail && isValidName && isValidUserTickets {
-			remainingTickets = remainingTickets - userTickets
-			bookings = append(bookings, firstName+" "+lastName)
+			bookTicket(userTickets,firstName, lastName, email )
+			
 			maxTickets,lastKnownWinner = getMostTicketOwner(userTickets, maxTickets, firstName, lastKnownWinner)
 
 			printInfo(remainingTickets)
@@ -34,7 +36,7 @@ func main() {
 
 			if noTicketsRemaining {
 				// end program
-				printSummary(bookings,lastKnownWinner,maxTickets)
+				printSummary(lastKnownWinner,maxTickets)
 				break
 			}
 		} else {
@@ -53,6 +55,18 @@ func main() {
 
 }
 
+func bookTicket(userTickets uint, firstName string, lastName string, email string) {
+	remainingTickets = remainingTickets - userTickets
+
+	var userData = make(map[string]string)
+	userData["firstName"] = firstName
+	userData["lastName"] = lastName
+	userData["email"] = email
+	userData["numberOfTickets"] = strconv.FormatUint(uint64(userTickets), 10)
+
+	bookings = append(bookings, userData)
+}
+
 func printInfo(remainingTickets uint) {
 	fmt.Printf("Here is the list of people who have acquired ticket - %v\n", getFirstNames())
 	fmt.Printf("Remains - %v\n", remainingTickets)
@@ -62,8 +76,7 @@ func getFirstNames() []string {
 
 	firstNames := []string{}
 	for _, booking := range bookings {
-		names := strings.Fields(booking)
-		firstNames = append(firstNames, names[0])
+		firstNames = append(firstNames, booking["firstName"])
 	}
 
 	return firstNames
@@ -95,16 +108,6 @@ func getUserInput() (string, string, string, uint) {
 	return firstName, lastName, email, userTickets
 }
 
-func validateInput(firstName string, lastName string, email string, userTickets uint, remainingTickets uint) (bool, bool, bool) {
-
-	isValidName := len(firstName) >= 2 && len(lastName) >= 2
-	isValidEmail := strings.Contains(email, "@")
-	isValidUserTickets := userTickets > 0 && userTickets <= remainingTickets
-
-	return isValidName, isValidEmail, isValidUserTickets
-
-}
-
 func getMostTicketOwner(userTickets uint, maxTickets uint, firstName string, lastKnownWinner string) (uint, string) {
 	if userTickets > maxTickets {
 		lastKnownWinner = firstName
@@ -114,6 +117,11 @@ func getMostTicketOwner(userTickets uint, maxTickets uint, firstName string, las
 	}
 }
 
-func printSummary(bookings []string, lastKnownWinner string, maxTickets uint)  {
-	fmt.Printf("We have sold out all tickets for conference\nHere is the list of participants %v\nMost number of tickets is acquired by %v and count is %v\n", strings.Join(bookings, ", "), lastKnownWinner, maxTickets)
+func printSummary(lastKnownWinner string, maxTickets uint)  {
+	fmt.Println("We have sold out all tickets for conference. Here is the list of participants")
+	for _, booking := range bookings {
+		fmt.Println(booking["firstName"] + " " + booking["lastName"])
+	}
+
+	fmt.Printf("Most number of tickets is acquired by %v and count is %v\n", lastKnownWinner, maxTickets)
 }
